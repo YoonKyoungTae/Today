@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import timber.log.Timber
 
 
 // todo 이미지 업로드 : https://firebase.google.com/docs/storage/android/upload-files?authuser=0
@@ -32,52 +33,22 @@ import org.jsoup.Jsoup
  * 4. 이후에 스토리지에 저장
  */
 
-sealed class Components() {
-
-    abstract fun getView(): View
-
-    class Title(text: String) : Components() {
-        override fun getView(): View {
-            return TextView(context)
-        }
-    }
-
-    class Space() : Components() {
-        override fun getView(): View {
-            return TextView(context)
-        }
-    }
-
-}
-
 class ParsingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Timber.plant(Timber.DebugTree())
         setContentView(R.layout.activity_parsing)
 
         val btn = findViewById<Button>(R.id.btn)
         btn.setOnClickListener {
-            Log.d("TEST", "START!")
+            Timber.d("START!")
             function()
         }
 
-
     }
 
-
     ////////////
-    fun add(com : Components) {
-
-    }
-
-
-
-
-    ////////////
-
-
-    private val html = "http://shortword.co.kr/web_page/detail.php?id=400&cate=0"
     private var page = 500
 
     private fun function() {
@@ -86,35 +57,34 @@ class ParsingActivity : AppCompatActivity() {
                 process(page)
                 page++
                 delay(500)
-                Log.d("TEST", "=================END=================")
+                Timber.d("=================END=================")
             }
         }
     }
 
     private fun process(page: Int) {
-        val str = Jsoup.connect("http://shortword.co.kr/web_page/detail.php?id=${page}&cate=0").get()
         val table = str.getElementById("content_table")
         val h1 = table.select("h1")
         val h2 = table.select("h2")
         val img = table.select("img")[0].absUrl("src")
 
-        Log.d("TEST", "title : ${h1.text()}")
+        Timber.d("title : " + h1.text())
         var index = 0
 
         val spanP = h2.select("span")
         spanP.forEachIndexed { i, item ->
             val span = item.select("span")
-            Log.d("TEST", "conts : ${span.text()}")
+            Timber.d("conts : " + span.text())
 
             // 줄바꿈체크
             val next = span.next()
             val nextnext = next.next()
             if (next.toString() == "<br>" && nextnext.toString() == "<br>") {
-                Log.d("TEST", "=")
+                Timber.d("=")
             }
 
         }
 
-        Log.d("TEST", "image : $img")
+        Timber.d("image : $img")
     }
 }
